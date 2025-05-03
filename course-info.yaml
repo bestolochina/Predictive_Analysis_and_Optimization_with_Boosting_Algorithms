@@ -9,8 +9,5 @@ summary: <p>This project uses boosting algorithms to develop and optimize predic
 programming_language: Python
 content:
   - Predictive Analysis and Optimization with Boosting Algorithms
-additional_files:
-  - name: .idea/inspectionProfiles/profiles_settings.xml
-  - name: requirements.txt
 mode: Study
 yaml_version: 2
