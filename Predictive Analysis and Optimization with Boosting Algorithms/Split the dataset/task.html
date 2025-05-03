@@ -1,0 +1,37 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>If you built plots at the previous stage, you might have seen the following picture for numerical features:</p>
+<p><picture><source media="(max-width: 480px)" srcset="https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/480x/-/format/webp/ 1x,https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/960x/-/format/webp/ 2x,https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/1440x/-/format/webp/ 3x" type="image/webp"/><source media="(max-width: 800px)" srcset="https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/800x/-/format/webp/ 1x,https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/1600x/-/format/webp/ 2x,https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/2400x/-/format/webp/ 3x" type="image/webp"/><source srcset="https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/1100x/-/format/webp/ 1x,https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/2200x/-/format/webp/ 2x,https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/-/stretch/off/-/resize/3000x/-/format/webp/ 3x" type="image/webp"/><img alt="Histogram of distribution" height="400" name="histograms.png" src="https://ucarecdn.com/74f8378c-03c0-4a2d-88cf-3f0af501fceb/" width="1370"/></picture></p>
+<p>The histogram plot shows you how your data is distributed. The <code class="language-python">bmi</code> feature seems normally distributed. However, the <code class="language-python">charges</code> feature (which is the target) is right-skewed — there is a long tail to the right. The few entries to the far-right that subscribed to costly medical insurance programs will significantly affect the mean of the distribution. This will also affect the model's performance.</p>
+<p>There are several ways to solve the problem of right-skewed data. One way is to find a transformation that changes the distribution to a normal one. You will train and predict the transformed target but must perform the inverse transformation to interpret the results correctly. Another way is to remove the outliers from your data. You will perform z-score calculations and remove data points outside your threshold. This is the approach you will implement in this stage.</p>
+<p>The mathematical representation of the absolute z-score is:</p>
+<p><span class="math-tex">\[z = \Big| \frac{x - \mu}{\sigma} \Big|,\]</span></p>
+<p>where <span class="math-tex">\(x\)</span> is a data point, <span class="math-tex">\(\mu\)</span> is the sample mean, and <span class="math-tex">\(\sigma\)</span> is the standard deviation of the sample.</p>
+<p>To remove the outliers:</p>
+<pre><code class="language-python"># set threshold as 3
+threshod = 3
+
+# remove the outliers from the dataframe
+df = data[z &lt; threshold]</code></pre>
+<p>You first need to calculate the absolute z-score of the target variable and then filter the data by the threshold. Once outliers have been removed, split your data into training, test, and validation sets.</p>
+<h5 id="objectives">Objectives</h5>
+<p>To complete this stage:</p>
+<ol>
+<li>Separate the data into the target and features DataFrames;</li>
+<li>Perform the absolute z-score calculations and remove the outliers (the threshold is set to 3);</li>
+<li>Split the data without outliers into training and test sets with <code class="language-python">train_test_split</code>;</li>
+<li>Split the training set into training and validation sets with <code class="language-python">train_test_split</code>;</li>
+<li>Print a dictionary containing the shape of the features for the whole dataset and the sets after splitting.</li>
+</ol>
+<p>Set the following parameters for the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html" rel="noopener noreferrer nofollow" target="_blank">splitting function</a> in both cases:</p>
+<pre><code class="language-python">train_test_split(X, y, test_size=.2, shuffle=True, random_state=10)</code></pre>
+<p></p><div class="alert alert-primary">There should be only one <code class="language-python">print()</code> statement. Comment out or remove the <code class="language-python">print()</code> statement from the previous stage.</div>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1:</strong><em> an example of the program output</em></p>
+<pre><code class="language-no-highlight">{
+  'all': [100, 5],                     # shape of data after removing outliers
+  'train': [(80, 4), (80,)],           # shape of features and target of training set
+  'validation': [(10, 4), (10,)],      # shape of features and target of validation set
+  'test': [(10, 4), (10,)]             # shape of features and target of testing set
+}</code></pre>
+</div>

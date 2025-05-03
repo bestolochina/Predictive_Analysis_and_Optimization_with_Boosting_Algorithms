@@ -1,0 +1,8 @@
+type: framework
+content:
+  - Numerical vs. categorical
+  - Split the dataset
+  - Preprocess with ColumnTransformer
+  - Train and evaluate the base boosting algorithms
+  - Optimize the boosting algorithms
+current_task: 0

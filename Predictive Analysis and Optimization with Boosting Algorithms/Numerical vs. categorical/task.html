@@ -1,0 +1,23 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>Features are the essential building blocks of data analysis and machine learning insights. Numerical and categorical features are two basic features that play a critical role in this process.</p>
+<p>Numerical and categorical features have different characteristics and require other analysis methods. The preprocessing and transformations you perform will depend on the type of features. Your chosen machine-learning algorithm will also depend on the target variable type.</p>
+<p>In this project, you will build and optimize predictive models with the <a href="https://www.kaggle.com/datasets/mirichoi0218/insurance" rel="noopener noreferrer nofollow" target="_blank">Medical Insurance dataset</a> from Kaggle. All you have to do in this stage is to tell apart the numerical features from the categorical ones.</p>
+<h5 id="objectives">Objectives</h5>
+<p>To complete this stage:</p>
+<ol>
+<li>Call the provided <code class="java">download_data()</code> function to download the medical insurance dataset and save it as <em>insurance.csv</em> in the <code class="java">data</code> directory;</li>
+<li>Load the data in a <code class="java">pandas</code> DataFrame;</li>
+<li>Remove duplicates from the data with the <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html" rel="noopener noreferrer nofollow" target="_blank">.drop_duplicates()</a> method;</li>
+<li>Print a dictionary containing a list of the numerical and categorical features and the shape of the data.</li>
+</ol>
+<p>As an optional activity, you can make univariate and bivariate plots for the numerical and categorical features to understand your dataset. Tests will not check this.</p>
+<p></p><div class="alert alert-primary">When you call the <code class="java">download_data()</code> function, the <code class="java">data</code> directory is created and the <code class="java">insurance.csv</code> file is downloaded and saved in it.</div>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1:</strong><em> an example of the program output</em></p>
+<pre><code class="language-no-highlight">{
+  'numerical': ['sex', 'smoker', 'charges', 'children'],
+  'categorical': ['region', 'age', 'bmi'],
+  'shape': [100, 5]
+}</code></pre>
+</div>

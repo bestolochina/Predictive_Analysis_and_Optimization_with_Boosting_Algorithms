@@ -1,0 +1,64 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>Your data has been converted into a machine-readable format. The time has come to embark on the training and evaluation of several boosting algorithms. You will fine-tune the base models using specified hyperparameters. After the training is finished, we will evaluate the performance of your models using the mean absolute error (MAE) metric.</p>
+<p>This metric is particularly suitable for this problem since it shows how much your predictions are off from the actual values. A mean absolute error of zero means your predictions are very accurate. In contrast, a mean absolute error of one hundred means there is a difference of 100 units between your predictions and the actual values.</p>
+<p>The base <a href="https://xgboost.readthedocs.io/en/stable/parameter.html" rel="noopener noreferrer nofollow" target="_blank">XGBoost</a> model has the following parameters:</p>
+<pre><code class="language-python">XGBRegressor(
+  objective='reg:squarederror', n_estiamtors=n_estimators,
+  learning_rate=learning_rate, max_depth=max_depth,
+  early_stopping=stopping_rounds, verbosity=0, n_jobs=n_jobs
+)</code></pre>
+<p>The base <a href="https://catboost.ai/en/docs/concepts/python-reference_catboostregressor" rel="noopener noreferrer nofollow" target="_blank">CatBoost</a> model has the following parameters:</p>
+<pre><code class="language-http">CatBoostRegressor(
+  loss_function='RMSE', iterations=n_estimators,
+  learning_rate=learning_rate, max_depth=max_depth,
+  early_stopping_rounds=stopping_rounds, silent=True, thread_count=n_jobs
+)
+</code></pre>
+<p>The base <a href="https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMRegressor.html" rel="noopener noreferrer nofollow" target="_blank">LightGBM</a> model has the following parameters:</p>
+<pre><code class="language-python">LGBMRegressor(
+  objective='regression', n_estimators=n_estimators,
+  learning_rate=learning_rate, max_depth=max_depth,
+  verbosity=-1, n_jobs=n_jobs
+)</code></pre>
+<p>When fitting the models, they should be evaluated on the evaluation set:</p>
+<pre><code class="language-python"># for XGBoost and CatBoost
+model.fit(X_train, y_train, eval_set=eval_set, verbose=False)
+
+# for LightGBM
+model.fit(X_train, y_train, eval_set=eval_set, callbacks=callbacks)</code></pre>
+<p>The <code class="language-python">LightGBM</code> model uses the callbacks to specify the <code class="language-python">early_stopping_rounds</code> when fitting the model. In <code class="language-python">XGBoost</code> and <code class="language-python">CatBoost</code>, this parameter is specified when creating an instance of the model. You can import this callback with:</p>
+<pre><code class="language-python">from lightgbm import early_stopping</code></pre>
+<p>Use the following parameters for your models:</p>
+<pre><code class="language-python">n_jobs = -1
+learning_rate = 1e-1
+
+max_depth = 10
+n_estimators = 100
+
+eval_set = [(X_val, y_val)]
+
+stopping_rounds = 5
+callbacks = [
+    early_stopping(stopping_rounds=stopping_rounds, verbose=False)
+]</code></pre>
+<p>Remember in stage 2 you split the data to get a validation set. The <code class="language-python">eval_set</code> variable contains this validation data from stage 2.</p>
+<h5 id="objectives">Objectives</h5>
+<p>To complete this stage:</p>
+<ol>
+<li>Fit a base <code class="language-python">XGBoost</code>, <code class="language-python">CatBoost</code>, and <code class="language-python">LightGBM</code> model on the training set and evaluate on the validation set;</li>
+<li>Make predictions for each base model on the training, validation, and testing sets;</li>
+<li>Evaluate the predictions using the <code class="language-python">mean_absolute_error</code> metric from <code class="language-python">sklearn</code> library;</li>
+<li>Store the prediction results in a DataFrame. The index should be <code class="language-python">mae_train</code>, <code class="language-python">mae_val</code>, and <code class="language-python">mae_test</code>, while the column names should be <code class="language-python">xgb_reg</code>, <code class="language-python">cat_reg</code>, and <code class="language-python">lgbm_reg</code>;</li>
+<li>Save the DataFrame as <code class="language-python">baseline.csv</code> in the <code class="language-python">data</code> directory. You can use the <code class="language-python">.to_csv()</code> method.</li>
+</ol>
+<p>As an optional activity, you can plot the mean absolute errors for each base model and analyze it for signs of underfitting or overfitting. Tests will not check this.</p>
+<p></p><div class="alert alert-warning">Before pressing the <code class="language-python">Check</code> button, please run your solution.</div>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1:</strong><em> an example of the output DataFrame</em></p>
+<pre><code class="language-python">           xgb_reg  cat_reg  lgbm_reg
+mae_train     14.0    201.0     933.0
+mae_val      294.0    247.0     470.0
+mae_test     288.0    277.0     739.0
+</code></pre>
+</div>

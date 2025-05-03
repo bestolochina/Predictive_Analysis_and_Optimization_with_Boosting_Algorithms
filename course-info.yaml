@@ -1,0 +1,16 @@
+type: hyperskill
+title: Predictive Analysis and Optimization with Boosting Algorithms
+language: English
+summary: <p>This project uses boosting algorithms to develop and optimize predictive
+  models for medical insurance costs. It encompasses data analysis and feature transformation
+  and provides a basic overview of boosting algorithms. It will guide and support
+  you in implementing and optimizing these algorithms to achieve accurate predictive
+  analytics.</p><br/><br/>Learn more at <a href="https://hyperskill.org/projects/392?utm_source=ide&utm_medium=ide&utm_campaign=ide&utm_content=project-card">https://hyperskill.org/projects/392</a>
+programming_language: Python
+content:
+  - Predictive Analysis and Optimization with Boosting Algorithms
+additional_files:
+  - name: .idea/inspectionProfiles/profiles_settings.xml
+  - name: requirements.txt
+mode: Study
+yaml_version: 2

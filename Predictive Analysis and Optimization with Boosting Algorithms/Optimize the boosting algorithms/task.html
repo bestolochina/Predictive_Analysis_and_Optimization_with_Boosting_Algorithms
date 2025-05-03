@@ -1,0 +1,96 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>If you built a plot at the previous stage, then most likely, your result would look like this:</p>
+<p><picture><source media="(max-width: 480px)" srcset="https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/480x/-/format/webp/ 1x,https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/960x/-/format/webp/ 2x,https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/1440x/-/format/webp/ 3x" type="image/webp"/><source media="(max-width: 800px)" srcset="https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/800x/-/format/webp/ 1x,https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/1600x/-/format/webp/ 2x,https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/2400x/-/format/webp/ 3x" type="image/webp"/><source srcset="https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/1100x/-/format/webp/ 1x,https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/2200x/-/format/webp/ 2x,https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/-/stretch/off/-/resize/3000x/-/format/webp/ 3x" type="image/webp"/><img alt="Mean absolute error plots showing overfitting" height="400" name="overfitting.png" src="https://ucarecdn.com/3b746251-4254-4906-a1d7-0381c3757798/" width="1000"/></picture></p>
+<p>Overfitting is a phenomenon where a machine learning model learns the training data too well and does not generalize well to new data. In our case, you can notice that all the boosting regressors are overfitted, and XGBoost is overfitted the most.</p>
+<p>In addition to model generalization, you also care about the actual value of your predictions. The MAE value tells you how much your predictions deviate from their value. This can be represented as: </p>
+<p><span class="math-tex">\[\text{actual values} \ \pm \text{MAE}\]</span>The base XGBoost model's MAE error of <span class="math-tex">\(2800\)</span> on the test set indicates that its predictions may be above or below their actual values by <span class="math-tex">\(2800\)</span> on average. If this error is acceptable, given the cost of medical insurance, you can use the model as is. Otherwise, try to reduce the error. One way to achieve this is to tune the model's hyperparameters.</p>
+<p>Hyperparameters are set before the training process. They control how the model learns, and they can significantly impact how well the model performs. In this stage, we will tune the hyperparameters of your base models to help them prevent overfitting.</p>
+<p>The <a href="https://optuna.readthedocs.io/en/stable/" rel="noopener noreferrer nofollow" target="_blank">Optuna</a> library can help optimize the hyperparameters of your models. It automates the search process so you can find the most optimal combination of hyperparameters for the model in a few lines of code.</p>
+<p>There are many parameters for the boosting algorithms. Optimize <code class="language-python">XGBoost</code> with the following parameters:</p>
+<pre><code class="language-python">{
+  'n_estimators': trial.suggest_int('n_estimators', 25, 1000),
+  'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1, log=True),
+  'max_depth': trial.suggest_int('max_depth', 2, 20),
+  'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0, 1),
+  'colsample_bytree': trial.suggest_float('colsample_bytree', 0, 1),
+  'objective': trial.suggest_categorical('objective', ['reg:squarederror', 'reg:gamma', 'reg:absoluteerror', 'reg:tweedie']),
+  'alpha': trial.suggest_float('alpha', 0, 5),
+  'lambda': trial.suggest_float('lambda', 0, 5),
+  'subsample': trial.suggest_float('subsample', 0, 1),
+  'tweedie_variance_power': trial.suggest_float('tweedie_variance_power', 1, 2)
+}</code></pre>
+<p> <code class="language-python">CatBoost</code> with:</p>
+<pre><code class="language-python">{
+  'iterations': trial.suggest_int('iterations', 100, 1000),
+  'loss_function': trial.suggest_categorical('loss_function', ['RMSE', 'MAE', 'MAPE', 'Tweedie:variance_power=1.99']),
+  'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1, log=True),
+  'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0, 1),
+  'max_depth': trial.suggest_int('max_depth', 2, 16),
+  'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
+  'min_child_samples': trial.suggest_int('min_child_samples', 1, 10),
+  'subsample': trial.suggest_float('subsample', 0.01, 1),
+}
+</code></pre>
+<p>And <code class="language-python">LightGBM</code> with:</p>
+<pre><code class="language-python">{
+  'n_estimators': trial.suggest_int('n_estimators', 25, 1000),
+  'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1, log=True),
+  'max_depth': trial.suggest_int('max_depth', 2, 20),
+  'colsample_bytree': trial.suggest_float('colsample_bytree', 0, 1),
+  'objective': trial.suggest_categorical('objective', ['regression', 'gamma']),
+  'reg_alpha': trial.suggest_float('reg_alpha', 0, 5),
+  'reg_lambda': trial.suggest_float('reg_lambda', 0, 5),
+  'subsample': trial.suggest_float('subsample', 0, 1),
+  'min_child_weight': trial.suggest_float('min_child_weight', 1e-5, 1.0, log=True),
+  'min_child_samples': trial.suggest_int('min_child_samples', 2, 30)
+}</code></pre>
+<p>To perform the optimization, you must first define the objective function with the hyperparameter values. This function should return your evaluation metric: mean absolute error. The <code class="language-python">XGBoost</code> objective function could be defined as:</p>
+<pre><code class="language-python">def xgb_objective(trial):
+
+    # set the hyperparameters
+    # xgb_hyperparams = {...}
+
+    # create an instance of the model with the hyperparameters
+    model = XGBRegressor(n_jobs=n_jobs, seed=random_state, verbosity=0,
+            early_stopping_rounds=stopping_rounds, **xgb_hyperparams)
+
+    # fit the model on the train set and evaluate on the validation set
+    model.fit(Xtrn, ytrn, eval_set=eval_set, verbose=False)
+
+    # predict with the model
+    ypred = model.predict(Xval)
+
+    # estimate the evaluation metric
+    mae = mean_absolute_error(yval, ypred)
+
+    return mae
+</code></pre>
+<p>The next step is to find the optimal hyperparameter with <code class="language-python">Optuna</code>. You can do so with:</p>
+<pre><code class="language-python">xgb_study = optuna.create_study(direction='minimize', sampler=optuna.samplers.TPESampler(seed=random_state))
+xgb_study.optimize(xgb_objective, n_trials=500, n_jobs=-1)</code></pre>
+<p>After performing the optimization, you should train an <code class="language-python">XGBoost</code> model with the optimal hyperparameter. You can do so with:</p>
+<pre><code class="language-python"># The optimized hyperparameter is in xgb_study.best_params
+model = XGBRegressor(early_stopping_rounds=stopping_rounds, verbosity=0,
+                     n_jobs=n_jobs, **xgb_study.best_params)</code></pre>
+<p>The process should be repeated for the <code class="language-python">CatBoost</code> and <code class="language-python">LightGBM</code> models to get their optimized models as well. You can assume a <code class="language-python">random_state</code> value of <code class="language-python">10</code>.</p>
+<h5 id="objectives">Objectives</h5>
+<p>To complete this stage:</p>
+<ol>
+<li>Find the optimal hyperparameters for the <code class="language-python">XGBoost</code>, <code class="language-python">CatBoost</code>, and <code class="language-python">LightGBM</code> models;</li>
+<li>Use the optimized hyperparameters to fit and evaluate <code class="language-python">XGBoost</code>, <code class="language-python">CatBoost</code>, and <code class="language-python">LightGBM</code> models;</li>
+<li>Make predictions for each optimized model on the training, validation, and testing sets;</li>
+<li>Evaluate the predictions using the mean absolute error metric as in the previous stage;</li>
+<li>Store the prediction results in a DataFrame in the same format as in the previous stage;</li>
+<li>Save the DataFrame as <em>optimized.csv</em> in the <code class="language-python">data</code> directory.</li>
+</ol>
+<p></p><div class="alert alert-primary">It will take a few minutes to optimize the hyperparameters.</div>
+<p>After successful submission, a file with a plot of the MAE values for the optimized models will be saved in the <code class="language-python">data</code> folder. How does it compare with that of the base models?</p>
+<p></p><div class="alert alert-warning">Before pressing the <code class="language-python">Check</code> button, please run your solution.</div>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1:</strong><em> an example of the output DataFrame</em></p>
+<pre><code class="language-no-highlight">           xgb_reg  cat_reg  lgbm_reg
+mae_train  288.0    237.0    450.0
+mae_val    294.0    247.0    470.0
+mae_test   290.0    277.0    500.0</code></pre>
+</div>

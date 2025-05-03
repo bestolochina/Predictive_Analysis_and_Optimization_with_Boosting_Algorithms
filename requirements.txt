@@ -1,0 +1,11 @@
+requests
+https://github.com/hyperskill/hs-test-python/archive/release.tar.gz
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+xgboost
+catboost
+lightgbm
+optuna

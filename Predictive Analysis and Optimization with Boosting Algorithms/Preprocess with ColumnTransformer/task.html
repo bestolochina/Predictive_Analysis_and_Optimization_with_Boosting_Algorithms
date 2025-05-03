@@ -1,0 +1,21 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>Machine learning algorithms can handle numerical features, but when it comes to categorical features, they require transformation into numeric values before they can be utilized. The type of transformation depends on whether the categorical feature has a natural order (ordinal feature) or not (nominal feature).</p>
+<p>Numerical features with different scales can have varying degrees of influence on a machine-learning model, which can skew the results. These features can be transformed to have the same scale to address this. This process can improve the performance of the model.</p>
+<p>In this stage, you will transform the training, validation, and testing sets into a form that the machine learning algorithms can understand.</p>
+<h5 id="objectives">Objectives</h5>
+<p>To complete this stage:</p>
+<ol>
+<li>Assemble the numerical and categorical transformation steps in a <a href="https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html" rel="noopener noreferrer nofollow" target="_blank">ColumnTransformer</a>. Use <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html" rel="noopener noreferrer nofollow" target="_blank">StandardScaler</a> for the numerical features and <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html" rel="noopener noreferrer nofollow" target="_blank">OneHotEncoder</a> for the categorical features;</li>
+<li>Fit the <code class="java">ColumnTransformer</code> on the training set;</li>
+<li>Transform the training, validation, and testing sets with the <code class="java">ColumnTransformer</code>;</li>
+<li>Print the dictionary containing the shapes of the transformed training, validation, and testing sets.</li>
+</ol>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1:</strong><em> an example of the program output</em></p>
+<pre><code class="language-no-highlight">{
+  'train': [80, 6],
+  'validation': [10, 6],
+  'test': [10, 6]
+}</code></pre>
+</div>
