@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.model_selection import train_test_split
 
 
 def download_data() -> pd.DataFrame:
@@ -25,48 +26,34 @@ def download_data() -> pd.DataFrame:
 if __name__ == '__main__':
     df = download_data().drop_duplicates()
 
-    numerical_features = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
-    categorical_features = df.select_dtypes(include=['object']).columns.tolist()
-    features = {'numerical': numerical_features, 'categorical': categorical_features, 'shape': list(df.shape)}
-    print(features)
+    # Separate the data into the target and features DataFrames;
+    features: pd.DataFrame = df.loc[:,['age', 'sex', 'bmi', 'children', 'smoker', 'region']]
+    target: pd.Series = df.loc[:,'charges']
 
-# Set style
-sns.set(style="whitegrid")
+    # Perform the absolute z-score calculations and remove the outliers (the threshold is set to 3);
+    threshold: int = 3
+    z: pd.Series = (target - target.mean()) / target.std()
+    mask: pd.Series = z.abs() <= 3
 
-# Univariate plots for numerical features
-for col in numerical_features:
-    plt.figure(figsize=(6, 4))
-    sns.histplot(df[col], kde=True, bins=30)
-    plt.title(f"Distribution of {col}")
-    plt.xlabel(col)
-    plt.ylabel("Count")
-    plt.tight_layout()
-    plt.show()
+    features = features[mask]
+    target = target[mask]
 
-# Univariate plots for categorical features
-for col in categorical_features:
-    plt.figure(figsize=(6, 4))
-    sns.countplot(data=df, x=col)
-    plt.title(f"Count of {col}")
-    plt.xlabel(col)
-    plt.ylabel("Frequency")
-    plt.tight_layout()
-    plt.show()
+    # Split the data without outliers into training and test sets with train_test_split;
+    X_full_train, X_test, y_full_train, y_test = train_test_split(
+        features, target, test_size=0.2, shuffle=True, random_state=10
+    )
 
-# Bivariate plots: Numerical vs Target (assume 'charges' is the target)
-target = 'charges'
-for col in numerical_features:
-    if col != target:
-        plt.figure(figsize=(6, 4))
-        sns.scatterplot(data=df, x=col, y=target)
-        plt.title(f"{col} vs {target}")
-        plt.tight_layout()
-        plt.show()
+    # Split the training set into training and validation sets with train_test_split;
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_full_train, y_full_train, test_size=0.2, shuffle=True, random_state=10
+    )
 
-# Bivariate plots: Categorical vs Target
-for col in categorical_features:
-    plt.figure(figsize=(6, 4))
-    sns.boxplot(data=df, x=col, y=target)
-    plt.title(f"{target} by {col}")
-    plt.tight_layout()
-    plt.show()
+    # Print a dictionary containing the shape of the features for the whole dataset and the sets after splitting.
+    print(
+        {
+            'all': [features.shape[0], features.shape[1]],
+            'train': [X_train.shape, y_train.shape],
+            'validation': [X_val.shape, y_val.shape],
+            'test': [X_test.shape, y_test.shape]
+        }
+    )
