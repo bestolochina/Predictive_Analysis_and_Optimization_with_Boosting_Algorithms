@@ -1,6 +1,8 @@
 import os
 import requests
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def download_data() -> pd.DataFrame:
@@ -27,3 +29,44 @@ if __name__ == '__main__':
     categorical_features = df.select_dtypes(include=['object']).columns.tolist()
     features = {'numerical': numerical_features, 'categorical': categorical_features, 'shape': list(df.shape)}
     print(features)
+
+# Set style
+sns.set(style="whitegrid")
+
+# Univariate plots for numerical features
+for col in numerical_features:
+    plt.figure(figsize=(6, 4))
+    sns.histplot(df[col], kde=True, bins=30)
+    plt.title(f"Distribution of {col}")
+    plt.xlabel(col)
+    plt.ylabel("Count")
+    plt.tight_layout()
+    plt.show()
+
+# Univariate plots for categorical features
+for col in categorical_features:
+    plt.figure(figsize=(6, 4))
+    sns.countplot(data=df, x=col)
+    plt.title(f"Count of {col}")
+    plt.xlabel(col)
+    plt.ylabel("Frequency")
+    plt.tight_layout()
+    plt.show()
+
+# Bivariate plots: Numerical vs Target (assume 'charges' is the target)
+target = 'charges'
+for col in numerical_features:
+    if col != target:
+        plt.figure(figsize=(6, 4))
+        sns.scatterplot(data=df, x=col, y=target)
+        plt.title(f"{col} vs {target}")
+        plt.tight_layout()
+        plt.show()
+
+# Bivariate plots: Categorical vs Target
+for col in categorical_features:
+    plt.figure(figsize=(6, 4))
+    sns.boxplot(data=df, x=col, y=target)
+    plt.title(f"{target} by {col}")
+    plt.tight_layout()
+    plt.show()

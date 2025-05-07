@@ -3,7 +3,7 @@ hyperskill_project:
   ide_files: https://hyperskill.org/api/projects/392/additional-files/additional_files.json
   is_template_based: false
   use_ide: true
-update_date: "Mon, 05 May 2025 14:05:24 UTC"
+update_date: "Wed, 07 May 2025 12:55:30 UTC"
 stages:
   - id: 2321
     step: 37404
@@ -123,8 +123,6 @@ topics:
       theory_id: 11417
     - title: Feature scaling
       theory_id: 28166
-    - title: PyCharm basics
-      theory_id: 6193
     - title: Introduction to scikit-learn
       theory_id: 10430
     - title: Train and test sets

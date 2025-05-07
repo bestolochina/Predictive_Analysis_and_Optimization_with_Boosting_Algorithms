@@ -2,9 +2,6 @@ from hstest import StageTest, TestCase, CheckResult
 from hstest.stage_test import List
 import os
 import re
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 class BoostingTest(StageTest):
@@ -32,65 +29,79 @@ class BoostingTest(StageTest):
         if not dict_match:
             return CheckResult.wrong("Do not print an empty dictionary")
 
-        if "numerical" not in reply:
-            return CheckResult.wrong("The dictionary should contain a numerical key")
+        if 'all' not in reply:
+            return CheckResult.wrong("The key 'all' is not in the dictionary")
 
-        if "categorical" not in reply:
-            return CheckResult.wrong("The dictionary should contain a categorical key")
+        if 'train' not in reply:
+            return CheckResult.wrong("The key 'train' is not in the dictionary")
 
-        if "shape" not in reply:
-            return CheckResult.wrong("The dictionary should contain a shape key")
+        if 'validation' not in reply:
+            return CheckResult.wrong("The key 'validation' is not in the dictionary")
 
-        num_pattern = r"'numerical': \[(.*?)\]"
-        match_num = re.search(num_pattern, reply)
+        if 'test' not in reply:
+            return CheckResult.wrong("The key 'test' is not in the dictionary")
 
-        if not match_num:
-            return CheckResult.wrong("The numerical value should be a list of strings")
+        pattern = r"'(all|train|validation|test)': \[(.*?)\]"
 
-        cat_pattern = r"'categorical': \[(.*?)\]"
-        match_cat = re.search(cat_pattern, reply)
+        matched = re.findall(pattern, reply)
 
-        if not match_cat:
-            return CheckResult.wrong("The categorical value should be a list of strings")
+        if not matched or len(matched) != 4:
+            return CheckResult.wrong("Ensure that the correct keys are in the dictionary")
 
-        shape_pattern = r"'shape': \[(.*?)\]"
-        match_shape = re.search(shape_pattern, reply)
+        reply_dict = {}
 
-        if not match_shape:
-            return CheckResult.wrong("The shape value should be a list of integers")
+        for one in matched:
+            if len(one) != 2:
+                return CheckResult.wrong("The value of a key is a list of tuples: [(nrow, ncol), (nrow,)]")
 
-        num_value = sorted(match_num.group(1).split(", "))
-        num_value = [v.strip("'") for v in num_value]
+        for key, value in matched:
+            reply_dict[key] = value
 
-        if len(num_value) != 4:
-            return CheckResult.wrong("There should be four items in the numerical list")
+        all_value = reply_dict['all'].split(', ')
+        all_value = [v.strip() for v in all_value]
 
-        if num_value != ['age', 'bmi', 'charges', 'children']:
-            return CheckResult.wrong("One or more of the numerical features are incorrect")
+        if not all_value[0].isdigit() or not all_value[1].isdigit():
+            return CheckResult.wrong("The shape for the `all` key is not an integer")
 
-        cat_value = sorted(match_cat.group(1).split(", "))
-        cat_value = [v.strip("'") for v in cat_value]
+        train_value = reply_dict['train']
 
-        if len(cat_value) != 3:
-            return CheckResult.wrong("There should be three items in the categorical list")
+        pattern_num = r'\((\d+),? ?(\d+)?\)'
 
-        if cat_value != ["region", 'sex', 'smoker']:
-            return CheckResult.wrong("One or more of the categorical features are incorrect")
+        train_match = re.findall(pattern_num, train_value)
 
-        shape_value = match_shape.group(1).split(", ")
+        train_result = [int(v) for match in train_match for v in match if v.isdigit()]
 
-        if len(shape_value) != 2:
-            return CheckResult.wrong("There should be two items in the shape list: [nrows, ncols]")
+        if train_result[:2] != [851, 6]:
+            return CheckResult.wrong("The shape of the train features is incorrect")
 
-        if not shape_value[0].isdigit() or not shape_value[1].isdigit():
-            return CheckResult.wrong("The shape should be integer")
+        if train_result[-1] != 851:
+            return CheckResult.wrong("The shape of the train target is incorrect")
 
-        shape_value = [int(v) for v in shape_value]
+        valid_value = reply_dict['validation']
 
-        if shape_value[0] != 1337:
-            return CheckResult.wrong("The number of rows is incorrect. Did you drop duplicates?")
+        valid_match = re.findall(pattern_num, valid_value)
 
-        if shape_value[1] != 7:
-            return CheckResult.wrong("The number of columns are incorrect")
+        valid_result = [int(v) for match in valid_match for v in match if v.isdigit()]
+
+        if valid_result[:2] != [213, 6]:
+            return CheckResult.wrong("The shape of the validation features is incorrect")
+
+        if valid_result[-1] != 213:
+            return CheckResult.wrong("The shape of the validation target is incorrect")
+
+        test_value = reply_dict['test']
+
+        test_match = re.findall(pattern_num, test_value)
+
+        test_result = [int(v) for match in test_match for v in match if v.isdigit()]
+
+        if test_result[:2] != [266, 6]:
+            return CheckResult.wrong("The shape of the test features is incorrect")
+
+        if test_result[-1] != 266:
+            return CheckResult.wrong("The shape of the test target is incorrect")
 
         return CheckResult.correct()
+
+
+
