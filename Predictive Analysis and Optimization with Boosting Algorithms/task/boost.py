@@ -71,13 +71,6 @@ if __name__ == '__main__':
     X_test_transformed = preprocessor.transform(X_test)
 
     # Print the dictionary containing the shapes of the transformed training, validation, and testing sets.
-    # an example of the program output:
-    # {
-    #   'train': [80, 6],
-    #   'validation': [10, 6],
-    #   'test': [10, 6]
-    # }
-
     print(
         {
             'train': list(X_train_transformed.shape),
