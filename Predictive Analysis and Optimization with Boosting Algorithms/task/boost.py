@@ -4,7 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
-
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 def download_data() -> pd.DataFrame:
     data_dir = '../data'
@@ -48,12 +49,39 @@ if __name__ == '__main__':
         X_full_train, y_full_train, test_size=0.2, shuffle=True, random_state=10
     )
 
-    # Print a dictionary containing the shape of the features for the whole dataset and the sets after splitting.
+    # Assemble the numerical and categorical transformation steps in a ColumnTransformer.
+    # Use StandardScaler for the numerical features and OneHotEncoder for the categorical features;
+    numerical_features = ['age', 'bmi', 'children']
+    categorical_features = ['sex', 'smoker', 'region']
+
+    # Create the column transformer
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(), numerical_features),
+            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
+        ]
+    )
+
+    # Fit the ColumnTransformer on the training set;
+    preprocessor.fit(X_train)
+
+    # Transform the training, validation, and testing sets with the ColumnTransformer;
+    X_train_transformed = preprocessor.transform(X_train)
+    X_val_transformed = preprocessor.transform(X_val)
+    X_test_transformed = preprocessor.transform(X_test)
+
+    # Print the dictionary containing the shapes of the transformed training, validation, and testing sets.
+    # an example of the program output:
+    # {
+    #   'train': [80, 6],
+    #   'validation': [10, 6],
+    #   'test': [10, 6]
+    # }
+
     print(
         {
-            'all': [features.shape[0], features.shape[1]],
-            'train': [X_train.shape, y_train.shape],
-            'validation': [X_val.shape, y_val.shape],
-            'test': [X_test.shape, y_test.shape]
+            'train': list(X_train_transformed.shape),
+            'validation': list(X_val_transformed.shape),
+            'test': list(X_test_transformed.shape)
         }
     )
