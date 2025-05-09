@@ -1,11 +1,16 @@
 import os
 import requests
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+from xgboost import XGBRegressor
+from catboost import CatBoostRegressor
+from lightgbm import LGBMRegressor, early_stopping
 
 def download_data() -> pd.DataFrame:
     data_dir = '../data'
@@ -70,18 +75,86 @@ if __name__ == '__main__':
     X_val_transformed = preprocessor.transform(X_val)
     X_test_transformed = preprocessor.transform(X_test)
 
-    # Print the dictionary containing the shapes of the transformed training, validation, and testing sets.
-    # an example of the program output:
-    # {
-    #   'train': [80, 6],
-    #   'validation': [10, 6],
-    #   'test': [10, 6]
-    # }
+    # Common settings
+    n_jobs = -1
+    learning_rate = 1e-1
+    max_depth = 10
+    n_estimators = 100
+    stopping_rounds = 5
 
-    print(
-        {
-            'train': list(X_train_transformed.shape),
-            'validation': list(X_val_transformed.shape),
-            'test': list(X_test_transformed.shape)
-        }
-    )
+    # Evaluation set
+    eval_set = [(X_val_transformed, y_val)]
+    callbacks = [early_stopping(stopping_rounds=stopping_rounds, verbose=False)]
+
+    # Define models
+    models = {
+        'xgb_reg': XGBRegressor(
+            objective='reg:squarederror',
+            n_estimators=n_estimators,
+            learning_rate=learning_rate,
+            max_depth=max_depth,
+            n_jobs=n_jobs,
+            verbosity=0
+        ),
+        'cat_reg': CatBoostRegressor(
+            loss_function='RMSE',
+            iterations=n_estimators,
+            learning_rate=learning_rate,
+            max_depth=max_depth,
+            early_stopping_rounds=stopping_rounds,
+            silent=True,
+            thread_count=n_jobs
+        ),
+        'lgbm_reg': LGBMRegressor(
+            objective='regression',
+            n_estimators=n_estimators,
+            learning_rate=learning_rate,
+            max_depth=max_depth,
+            n_jobs=n_jobs,
+            verbosity=-1
+        )
+    }
+
+    # Train and evaluate models
+    results = {}
+
+    for name, model in models.items():
+        if name == 'lgbm_reg':
+            model.fit(
+                X_train_transformed, y_train,
+                eval_set=eval_set,
+                callbacks=callbacks
+            )
+        else:
+            model.fit(
+                X_train_transformed, y_train,
+                eval_set=eval_set,
+                verbose=False
+            )
+
+        results[name] = {'model': model}
+
+    # Initialize results dictionary
+    mae_results = {
+        'xgb_reg': [],
+        'cat_reg': [],
+        'lgbm_reg': []
+    }
+
+    # Evaluate each model on train, val, test sets using MAE
+    for name, info in results.items():
+        model = info['model']
+        for X, y in [(X_train_transformed, y_train), (X_val_transformed, y_val), (X_test_transformed, y_test)]:
+            preds = model.predict(X)
+            mae = mean_absolute_error(y, preds)
+            mae_results[name].append(round(mae, 2))
+
+    # Create DataFrame with the specified index and columns
+    mae_df = pd.DataFrame(mae_results, index=['mae_train', 'mae_val', 'mae_test'])
+
+    # Save the DataFrame to CSV
+    os.makedirs('../data', exist_ok=True)
+    mae_df.to_csv('../data/baseline.csv')
+
+    # Optional: display the DataFrame
+    print(mae_df)
