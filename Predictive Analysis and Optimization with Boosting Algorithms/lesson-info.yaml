@@ -5,4 +5,4 @@ content:
   - Preprocess with ColumnTransformer
   - Train and evaluate the base boosting algorithms
   - Optimize the boosting algorithms
-current_task: 3
+current_task: 4
